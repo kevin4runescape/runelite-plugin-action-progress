@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
+import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.events.GameTick;
@@ -173,12 +173,8 @@ public class ActionManager
 
 	public int[] getActionTickTimes(Action action) {
 		// Should maybe be more generic in the future to handle different "modifiers" to actions
-		if (!isBoostableFletchingAction(action)) {
-			return action.getTickTimes();
-		}
-
-		boolean hasFletchingKnife = hasFletchingKnifeInInventory() || isWearingFletchingKnife();
-		if (!hasFletchingKnife) {
+		boolean fletchingKnifeBoost = isBoostableFletchingAction(action) && isItemPresent(ItemID.FLETCHING_KNIFE);
+		if (!fletchingKnifeBoost) {
 			return action.getTickTimes();
 		}
 
@@ -212,22 +208,21 @@ public class ActionManager
 			   && action.getDescription().equals("Cutting");
 	}
 
-	private boolean hasFletchingKnifeInInventory() {
-		ItemContainer inventory = this.client.getItemContainer(InventoryID.INVENTORY);
-		if (inventory == null) {
-			return false;
+	/**
+	 * Item present in the player's worn equipment or inventory.
+	 * @see net.runelite.api.gameval.ItemID
+	 */
+	private boolean isItemPresent(int itemId) {
+		ItemContainer wornEquipment = this.client.getItemContainer(InventoryID.WORN);
+		if (wornEquipment != null && wornEquipment.contains(itemId)) {
+			return true;
 		}
 
-		return inventory.contains(ItemID.FLETCHING_KNIFE);
-	}
-
-	private boolean isWearingFletchingKnife() {
-		ItemContainer gear = this.client.getItemContainer(InventoryID.EQUIPMENT);
-		if (gear == null) {
-			return false;
+		ItemContainer inventory = this.client.getItemContainer(InventoryID.INV);
+		if (inventory != null && inventory.contains(itemId)) {
+			return true;
 		}
 
-		return gear.contains(ItemID.FLETCHING_KNIFE);
+		return false;
 	}
-
 }
