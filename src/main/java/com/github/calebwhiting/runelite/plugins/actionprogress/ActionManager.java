@@ -173,6 +173,10 @@ public class ActionManager
 
 	public int[] getActionTickTimes(Action action) {
 		// Should maybe be more generic in the future to handle different "modifiers" to actions
+		if (isItemPresent(ItemID.JEWELLERS_CHISEL) && action == Action.FLETCH_CUT_TIPS) {
+			return new int[]{2};
+		}
+
 		boolean fletchingKnifeBoost = isBoostableFletchingAction(action) && isItemPresent(ItemID.FLETCHING_KNIFE);
 		if (!fletchingKnifeBoost) {
 			return action.getTickTimes();
